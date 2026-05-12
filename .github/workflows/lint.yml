@@ -29,6 +29,32 @@ jobs:
         run: ./gradlew checkstyleMain checkstyleTest
         shell: bash
 
+      - name: Checkstyle summary
+        if: always()
+        run: |
+          python3 - <<'EOF'
+          import xml.etree.ElementTree as ET, os, glob
+          total = 0
+          lines = []
+          for path in sorted(glob.glob("build/reports/checkstyle/*.xml")):
+              tree = ET.parse(path)
+              for f in tree.getroot().findall("file"):
+                  errors = f.findall("error")
+                  if errors:
+                      name = f.get("name", "").replace(os.getcwd() + "/", "")
+                      lines.append(f"\n**`{name}`**")
+                      for e in errors:
+                          lines.append(f"- Line {e.get('line')}: {e.get('message')} *({e.get('source','').split('.')[-1]})*")
+                      total += len(errors)
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as out:
+              if total == 0:
+                  out.write("## ✅ Checkstyle\n\nNo violations found.\n")
+              else:
+                  out.write(f"## ❌ Checkstyle — {total} violation(s)\n")
+                  out.write("\n".join(lines) + "\n")
+          EOF
+        shell: bash
+
       - name: Upload Checkstyle HTML report
         if: always()
         uses: actions/upload-artifact@v7

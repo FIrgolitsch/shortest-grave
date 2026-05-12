@@ -7,6 +7,10 @@ on:
     branches: [master]
   workflow_dispatch:
 
+permissions:
+  checks: write
+  pull-requests: write
+
 jobs:
   test:
     name: Gradle Test (Java 11)
@@ -26,6 +30,57 @@ jobs:
 
       - name: Run tests
         run: ./gradlew test jacocoTestReport --stacktrace
+        shell: bash
+
+      - name: Publish test results
+        if: always()
+        uses: dorny/test-reporter@v3
+        with:
+          name: JUnit Tests
+          path: build/test-results/test/*.xml
+          reporter: java-junit
+
+      - name: Add JaCoCo coverage to PR
+        if: github.event_name == 'pull_request'
+        uses: madrapps/jacoco-report@v1.7.2
+        with:
+          paths: build/reports/jacoco/test/jacocoTestReport.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 0
+          min-coverage-changed-files: 0
+          title: Code Coverage
+
+      - name: JaCoCo coverage summary
+        if: always()
+        run: |
+          python3 - <<'EOF'
+          import xml.etree.ElementTree as ET, os
+          path = "build/reports/jacoco/test/jacocoTestReport.xml"
+          if not os.path.exists(path):
+              exit(0)
+          root = ET.parse(path).getroot()
+          def pct(counter):
+              missed = int(counter.get("missed", 0))
+              covered = int(counter.get("covered", 0))
+              total = missed + covered
+              return (covered / total * 100) if total else 0.0
+          counters = {c.get("type"): c for c in root.findall("counter")}
+          rows = []
+          for kind in ("INSTRUCTION", "BRANCH", "LINE", "METHOD", "CLASS"):
+              c = counters.get(kind)
+              if c is None:
+                  continue
+              missed  = int(c.get("missed", 0))
+              covered = int(c.get("covered", 0))
+              total   = missed + covered
+              p = pct(c)
+              bar = "🟩" * int(p // 10) + "⬜" * (10 - int(p // 10))
+              rows.append(f"| {kind.capitalize()} | {covered}/{total} | {bar} {p:.1f}% |")
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as f:
+              f.write("## 📊 JaCoCo Coverage\n\n")
+              f.write("| Type | Covered | % |\n|---|---|---|\n")
+              f.write("\n".join(rows) + "\n")
+          EOF
         shell: bash
 
       - name: Upload JUnit XML results
@@ -59,4 +114,3 @@ jobs:
           name: jacoco-xml
           path: build/reports/jacoco/test/jacocoTestReport.xml
           if-no-files-found: warn
-
