@@ -267,7 +267,7 @@ public class ShortestGravePluginTest
 		assertEquals("shortestpath", msg.getNamespace());
 		assertEquals("path", msg.getName());
 
-		Map<String, Object> data = (Map<String, Object>) msg.getData();
+		Map<String, Object> data = msg.getData();
 		assertEquals(RESPAWN_LOCATION, data.get("start"));
 		assertEquals(DEATH_LOCATION, data.get("target"));
 	}
@@ -288,7 +288,7 @@ public class ShortestGravePluginTest
 		ArgumentCaptor<PluginMessage> captor = ArgumentCaptor.forClass(PluginMessage.class);
 		verify(eventBus).post(captor.capture());
 
-		Map<String, Object> data = (Map<String, Object>) captor.getValue().getData();
+		Map<String, Object> data = captor.getValue().getData();
 		assertFalse("config key should be absent when colourPath is null", data.containsKey("config"));
 	}
 
@@ -308,7 +308,7 @@ public class ShortestGravePluginTest
 		ArgumentCaptor<PluginMessage> captor = ArgumentCaptor.forClass(PluginMessage.class);
 		verify(eventBus).post(captor.capture());
 
-		Map<String, Object> data = (Map<String, Object>) captor.getValue().getData();
+		Map<String, Object> data = captor.getValue().getData();
 		Map<String, Object> configOverride = (Map<String, Object>) data.get("config");
 		assertEquals(Color.RED, configOverride.get("colourPath"));
 	}

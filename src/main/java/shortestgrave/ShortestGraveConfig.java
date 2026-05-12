@@ -7,6 +7,7 @@ import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
 import net.runelite.client.config.ConfigSection;
 
+@SuppressWarnings("SameReturnValue")
 @ConfigGroup("shortestgrave")
 public interface ShortestGraveConfig extends Config
 {
