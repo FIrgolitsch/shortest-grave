@@ -35,6 +35,8 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.Silent.class)
 public class ShortestGravePluginTest
 {
+	private static final WorldPoint DEATH_LOCATION = new WorldPoint(3200, 3200, 0);
+	private static final WorldPoint RESPAWN_LOCATION = new WorldPoint(3222, 3218, 0);
 	@Mock
 	private Client client;
 	@Mock
@@ -45,20 +47,8 @@ public class ShortestGravePluginTest
 	private ShortestGraveConfig config;
 	@Mock
 	private Player player;
-
 	@InjectMocks
 	private ShortestGravePlugin plugin;
-
-	private static final WorldPoint DEATH_LOCATION = new WorldPoint(3200, 3200, 0);
-	private static final WorldPoint RESPAWN_LOCATION = new WorldPoint(3222, 3218, 0);
-
-	@Before
-	public void setUp() throws Exception
-	{
-		setField(plugin, "currentPlayer", player);
-	}
-
-	// --- helpers ---
 
 	private static void setField(Object target, String name, Object value) throws Exception
 	{
@@ -67,11 +57,19 @@ public class ShortestGravePluginTest
 		field.set(target, value);
 	}
 
+	// --- helpers ---
+
 	private static Object getField(Object target, String name) throws Exception
 	{
 		Field field = target.getClass().getDeclaredField(name);
 		field.setAccessible(true);
 		return field.get(target);
+	}
+
+	@Before
+	public void setUp() throws Exception
+	{
+		setField(plugin, "currentPlayer", player);
 	}
 
 	// --- onActorDeath ---
