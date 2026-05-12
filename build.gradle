@@ -1,5 +1,7 @@
 plugins {
 	id 'java'
+	id 'jacoco'
+	id 'checkstyle'
 }
 
 repositories {
@@ -14,24 +16,55 @@ repositories {
 }
 
 def runeLiteVersion = 'latest.release'
-def pluginMainClass = 'com.example.ExamplePluginTest'
+def pluginMainClass = 'shortest-grave.ShortestGraveTest'
 
 dependencies {
-	compileOnly group: 'net.runelite', name:'client', version: runeLiteVersion
+	compileOnly "net.runelite:client:$runeLiteVersion"
 
 	compileOnly 'org.projectlombok:lombok:1.18.30'
 	annotationProcessor 'org.projectlombok:lombok:1.18.30'
 
-	testImplementation 'junit:junit:4.12'
-	testImplementation group: 'net.runelite', name:'client', version: runeLiteVersion
-	testImplementation group: 'net.runelite', name:'jshell', version: runeLiteVersion
+	testImplementation 'junit:junit:4.13.1'
+	testImplementation "net.runelite:client:$runeLiteVersion"
+	testImplementation "net.runelite:jshell:$runeLiteVersion"
 }
 
-group = 'com.example'
+group = 'shortest-grave'
+
+java {
+	toolchain {
+		languageVersion.set(JavaLanguageVersion.of(11))
+	}
+}
 
 tasks.withType(JavaCompile).configureEach {
 	options.encoding = 'UTF-8'
 	options.release.set(11)
+	sourceCompatibility = JavaVersion.VERSION_11
+	targetCompatibility = JavaVersion.VERSION_11
+}
+
+tasks.withType(Checkstyle).configureEach {
+	enabled = true
+	ignoreFailures = false
+}
+
+test {
+	jvmArgs = ['-Xms1g', '-Xmx8g']
+}
+
+jacoco {
+	toolVersion = "0.8.11"
+}
+
+tasks.named('jacocoTestReport', JacocoReport) {
+	dependsOn tasks.named('test')
+	reports {
+		xml.required = true
+		xml.outputLocation = layout.buildDirectory.file('reports/jacoco/test/jacocoTestReport.xml')
+		html.required = true
+		html.outputLocation = layout.buildDirectory.dir('reports/jacoco/test/html')
+	}
 }
 
 tasks.register('run', JavaExec) {
