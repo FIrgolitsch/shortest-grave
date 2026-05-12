@@ -1,5 +1,8 @@
 # Shortest Grave
 
+[![CI Tests](https://github.com/FIrgolitsch/shortest-grave/actions/workflows/tests.yml/badge.svg)](https://github.com/FIrgolitsch/shortest-grave/actions/workflows/tests.yml)
+[![Lint](https://github.com/FIrgolitsch/shortest-grave/actions/workflows/lint.yml/badge.svg)](https://github.com/FIrgolitsch/shortest-grave/actions/workflows/lint.yml)
+
 Triggers shortest path to plot a path to your gravestone after death.
 
 ## Features
